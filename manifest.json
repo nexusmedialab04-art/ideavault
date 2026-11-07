@@ -1,0 +1,15 @@
+{
+  "manifest_version": 3,
+  "name": "IdeaVault",
+  "version": "0.1.0",
+  "description": "Save selected text as notes in your browser's side panel. 100% local.",
+  "minimum_chrome_version": "116",
+  "permissions": ["sidePanel", "contextMenus", "storage"],
+  "host_permissions": ["https://api.lemonsqueezy.com/*"],
+  "background": { "service_worker": "background.js" },
+  "side_panel": { "default_path": "panel.html" },
+  "action": { "default_title": "Open IdeaVault" },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  }
+}

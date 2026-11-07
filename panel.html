@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>IdeaVault</title>
+  <style>
+    :root {
+      --bg: #ffffff; --fg: #1f2328; --muted: #6b7280; --card: #f4f5f7;
+      --border: #e2e4e8; --accent: #5b4bdb; --danger: #d93025; --ok: #188038;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #16181d; --fg: #e8eaed; --muted: #9aa0a6; --card: #20232a;
+        --border: #2f333b; --accent: #8b7dff; --danger: #f28b82; --ok: #81c995;
+      }
+    }
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+    body {
+      margin: 0; height: 100vh; display: flex; flex-direction: column;
+      background: var(--bg); color: var(--fg);
+      font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+    header { padding: 14px 14px 10px; border-bottom: 1px solid var(--border); }
+    h1 { margin: 0 0 6px; font-size: 16px; display: flex; justify-content: space-between; align-items: center; }
+    .plan { font-size: 11px; padding: 2px 8px; border-radius: 99px; background: var(--card); color: var(--muted); }
+    .plan.pro { background: var(--accent); color: #fff; }
+    .bar { height: 5px; background: var(--card); border-radius: 99px; overflow: hidden; }
+    .bar > div { height: 100%; width: 0; background: var(--accent); transition: width .2s; }
+    .bar > div.full { background: var(--danger); }
+    #counter { margin-top: 6px; font-size: 12px; color: var(--muted); }
+
+    .toolbar { padding: 10px 14px; border-bottom: 1px solid var(--border); display: flex; flex-direction: column; gap: 8px; }
+    .actions { display: flex; gap: 6px; flex-wrap: wrap; }
+    input[type="text"], input[type="search"], textarea, select {
+      width: 100%; padding: 7px 9px; border-radius: 8px;
+      border: 1px solid var(--border); background: var(--bg); color: var(--fg); font: inherit;
+    }
+    textarea { resize: vertical; min-height: 80px; }
+    select { padding: 5px 8px; font-size: 12px; }
+    button.primary, button.ghost {
+      padding: 7px 12px; border-radius: 8px; cursor: pointer; font: inherit; font-weight: 600;
+    }
+    button.primary { border: none; background: var(--accent); color: #fff; }
+    button.ghost { border: 1px solid var(--border); background: transparent; color: var(--fg); }
+    button:disabled { opacity: .55; cursor: not-allowed; }
+    button.link { background: none; border: none; padding: 0; color: var(--muted); font: inherit; font-size: 12px; text-decoration: underline; cursor: pointer; }
+    .form { display: flex; flex-direction: column; gap: 6px; padding: 10px; border: 1px solid var(--border); border-radius: 10px; background: var(--card); }
+    .form .row { display: flex; gap: 6px; align-items: center; }
+    .form .row select { flex: 1; }
+
+    main { flex: 1; overflow-y: auto; padding: 12px 14px; }
+    ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+    .note { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; }
+    .note-text { margin: 0 0 8px; white-space: pre-wrap; word-break: break-word; }
+    .note-meta { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 11px; color: var(--muted); }
+    .note-meta select { width: auto; max-width: 45%; }
+    .note-source { margin-top: 6px; font-size: 11px; }
+    .note-source a, .note-source span { color: var(--muted); display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .del { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 13px; padding: 2px 6px; border-radius: 6px; }
+    .del:hover { color: var(--danger); background: var(--border); }
+    .empty { text-align: center; color: var(--muted); padding: 32px 12px; }
+    .pro-box { margin-top: 14px; padding: 12px; border: 1px dashed var(--border); border-radius: 10px; }
+    .pro-box h2 { margin: 0 0 4px; font-size: 13px; }
+    .pro-box p { margin: 0 0 8px; font-size: 12px; color: var(--muted); }
+    .pro-box .row { display: flex; gap: 6px; }
+    .buy { display: block; margin-top: 8px; padding: 8px 12px; border-radius: 8px; text-align: center; text-decoration: none; font-weight: 600; background: var(--accent); color: #fff; }
+    .buy:hover { filter: brightness(1.1); }
+
+    #msg { padding: 0 14px; font-size: 12px; min-height: 1.4em; }
+    #msg.error { color: var(--danger); } #msg.ok { color: var(--ok); }
+    footer { padding: 10px 14px 12px; border-top: 1px solid var(--border); text-align: center; }
+    .donate {
+      display: block; padding: 9px 12px; border-radius: 10px; text-decoration: none; font-weight: 600;
+      color: #fff; background: linear-gradient(135deg, #ff7eb3, #ff758c 50%, #ff9a56);
+    }
+    .donate:hover { filter: brightness(1.06); }
+    .privacy-link { margin-top: 8px; }
+    dialog { max-width: 92vw; border: 1px solid var(--border); border-radius: 12px; background: var(--bg); color: var(--fg); padding: 16px; }
+    dialog::backdrop { background: rgba(0, 0, 0, .5); }
+    dialog h2 { margin: 0 0 8px; font-size: 15px; }
+    dialog ul { gap: 6px; padding-left: 18px; list-style: disc; font-size: 13px; }
+    dialog form { margin-top: 12px; text-align: right; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>IdeaVault <span id="plan" class="plan">Free</span></h1>
+    <div class="bar"><div id="barFill"></div></div>
+    <div id="counter"></div>
+  </header>
+
+  <section class="toolbar">
+    <input id="searchInput" type="search" placeholder="Search notes or URLs…" autocomplete="off" spellcheck="false" aria-label="Search notes" />
+
+    <div class="actions">
+      <button id="newNoteBtn" class="primary" type="button">+ New Note</button>
+      <button id="newCatBtn" class="ghost" type="button">+ Category</button>
+      <button id="exportBtn" class="ghost" type="button">⬇ Export</button>
+    </div>
+
+    <select id="filterSelect" aria-label="Filter by category" hidden></select>
+
+    <form id="newCatForm" class="form" hidden>
+      <input id="newCatInput" type="text" maxlength="30" placeholder="Category name" autocomplete="off" aria-label="Category name" />
+      <div class="row">
+        <button class="primary" type="submit">Add category</button>
+        <button id="newCatCancel" class="ghost" type="button">Cancel</button>
+      </div>
+    </form>
+
+    <form id="newNoteForm" class="form" hidden>
+      <textarea id="newNoteText" maxlength="5000" placeholder="Write your note…" aria-label="New note"></textarea>
+      <div class="row">
+        <select id="newNoteCategory" aria-label="Category"></select>
+        <button class="primary" type="submit">Save</button>
+        <button id="newNoteCancel" class="ghost" type="button">Cancel</button>
+      </div>
+    </form>
+  </section>
+
+  <main>
+    <ul id="notes"></ul>
+    <div id="empty" class="empty" hidden>
+      No notes yet.<br />Select text on any page, right-click and choose <strong>Save to IdeaVault</strong>, or press <strong>+ New Note</strong>.
+    </div>
+    <div id="noResults" class="empty" hidden>No notes match your search.</div>
+
+    <section id="proBox" class="pro-box" hidden>
+      <h2>Unlock IdeaVault Pro</h2>
+      <p>Unlimited notes, custom categories and category filters. Enter the license key from your purchase email.</p>
+      <div class="row">
+        <input id="licenseInput" type="text" placeholder="License key" autocomplete="off" spellcheck="false" />
+        <button id="activateBtn" class="primary" type="button">Activate</button>
+      </div>
+	  <a id="buyBtn" class="buy" target="_blank" rel="noopener noreferrer">Buy Pro</a>
+    </section>
+
+    <section id="proActive" class="pro-box" hidden>
+      <h2>Pro active ✓</h2>
+      <p>Unlimited local storage is unlocked on this browser.</p>
+      <button id="deactivateBtn" class="link" type="button">Deactivate this device</button>
+    </section>
+  </main>
+
+  <div id="msg" role="status"></div>
+
+  <footer>
+    <a id="donateBtn" class="donate" target="_blank" rel="noopener noreferrer">☕ Support the developer</a>
+    <div class="privacy-link"><button id="privacyBtn" class="link" type="button">Privacy terms</button></div>
+  </footer>
+
+  <dialog id="privacyDialog">
+    <h2>Privacy terms</h2>
+    <ul>
+      <li>Your notes are stored only on this device, in <code>chrome.storage.local</code>.</li>
+      <li>IdeaVault has no servers, accounts, analytics or trackers.</li>
+      <li>Your notes are never uploaded or shared.</li>
+      <li>The only network request is the license check sent to Lemon Squeezy when you activate, validate or deactivate Pro. It includes only your license key and an instance ID.</li>
+      <li>Exported backups are generated locally and saved to your device.</li>
+      <li>Uninstalling the extension deletes all saved data.</li>
+    </ul>
+    <form method="dialog"><button class="primary">Close</button></form>
+  </dialog>
+
+  <script src="panel.js"></script>
+</body>
+</html>
