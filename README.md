@@ -66,7 +66,8 @@ background.js   Service worker: context menu, note saving, deletion
 panel.html      Side panel interface and styles
 panel.js        Panel logic, categories, export, Lemon Squeezy licensing (see CONFIG)
 icons/          Extension icons (16, 48, 128 px)
-PRIVACY.md      Privacy policy```
+PRIVACY.md      Privacy policy
+```
 
 ## Contact
 
